@@ -4,23 +4,45 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  password  String
-  name      String?
-  createdAt DateTime  @default(now())
-  payments  Payment[]
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  password           String
+  name               String?
+  createdAt          DateTime  @default(now())
+  sentPayments       Payment[] @relation("SentPayments")
+  receivedPayments   Payment[] @relation("ReceivedPayments")
 }
 
 model Payment {
-  id        String   @id @default(cuid())
-  amount    Float
-  currency  String
-  status    String   @default("PENDING")
-  userId    String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  id              String         @id @default(uuid())
+  amount          Float
+  currency        Currency
+  status          PaymentStatus  @default(PENDING)
+
+  senderId        String
+  sender          User           @relation("SentPayments", fields: [senderId], references: [id])
+
+  receiverEmail   String         
+  receiver        User           @relation("ReceivedPayments", fields: [receiverEmail], references: [email])
+
+  createdAt       DateTime       @default(now())
+
+  @@index([receiverEmail])
+}
+
+enum Currency {
+  NGN
+  GHS
+  KES
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }

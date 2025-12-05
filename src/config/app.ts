@@ -1,7 +1,8 @@
-import express, {Request, Response} from "express";
+import express, { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-
+import authRoutes from "../routes/auth.routes";
+import paymentRoutes from "../routes/payment.routes";
 
 dotenv.config();
 
@@ -11,10 +12,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
+app.use("/api/auth", authRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({ error: "Route not found" });
